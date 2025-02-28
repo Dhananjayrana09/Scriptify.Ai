@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { Button } from "../../button";
+import { Button } from "../../ui/button";
 import Link from "next/link";
 
 export default function Banner() {
@@ -20,7 +20,7 @@ export default function Banner() {
         variant={"link"}
         className="mt-6 text-xl rounded-full px-12 py-8 lg:mt-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-indigo-600 hover:to-purple-600 text-white"
       >
-        <Link href="/#pricing" className="flex gap-2 items-center"><span className="relative">Get ScriptifyAi</span>
+        <Link href="/#pricing" className="flex gap-2 items-center"><span className="relative">Get Scriptify.Ai</span>
         <ArrowRight className="animate-pulse"/></Link>
       </Button>
     </section>

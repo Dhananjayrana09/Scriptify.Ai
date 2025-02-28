@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   return (
@@ -21,7 +22,7 @@ export default function Header() {
               alt="Scriptify logo"
               width={32}
               height={32}
-              className="hover:rotate-12 transform transition duration-200 ease-in-out"
+            className="hover:rotate-12 transform transition duration-200 ease-in-out"
             />
             <span className="font-extrabold text-lg">Scriptify.Ai</span>
           </span>
@@ -31,14 +32,26 @@ export default function Header() {
       {/* Center Section - Navigation Links */}
       <div className="hidden lg:flex flex-1 justify-center gap-8 items-center">
         <NavLink href="/#pricing">Pricing</NavLink>
+        <SignedIn>
         <NavLink href="/#posts">Your Posts</NavLink>
+        </SignedIn>
       </div>
 
       {/* Right Section - Extra Links */}
       <div className="flex items-center gap-4 lg:justify-end">
+        <SignedIn>
         <NavLink href="/dashboard">Upload a Video</NavLink>
-        <NavLink href="/sign-in">Sign In</NavLink>
+        </SignedIn>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
       </div>
+      <SignedOut>
+        <SignInButton >
+        <NavLink href="/sign-in">Sign In</NavLink>
+        </SignInButton>
+      </SignedOut>
+      <div/>
     </nav>
   );
 }

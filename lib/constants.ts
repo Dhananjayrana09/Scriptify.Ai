@@ -2,7 +2,7 @@ export const plansMap = [
     {
       id: "basic",
       name: "Basic",
-      description: "Get started with SpeakEasy!",
+      description: "Get started with Scriptify.Ai!",
       price: "10",
       items: ["3 Blog Posts", "3 Transcription"],
       paymentLink: "https://buy.stripe.com/test_aEU9D35X65fH0MMeUW",
