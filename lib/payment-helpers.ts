@@ -25,18 +25,52 @@ export async function handleCheckoutSessionCompleted({
   session: Stripe.Checkout.Session;
   stripe: Stripe;
 }) {
-  const customerId = session.customer as string;
-  const customer = await stripe.customers.retrieve(customerId);
-  const priceId = session.line_items?.data[0].price?.id;
+  try {
+    console.log("Starting handleCheckoutSessionCompleted");
+    const customerId = session.customer as string;
+    
+    if (!customerId) {
+      console.error("Missing customer ID in session", session);
+      return;
+    }
+    
+    console.log(`Retrieving customer: ${customerId}`);
+    const customer = await stripe.customers.retrieve(customerId);
+    
+    // Check if line_items exists and has data
+    if (!session.line_items?.data?.length) {
+      console.error("No line items found in session", session);
+      return;
+    }
+    
+    const priceId = session.line_items.data[0]?.price?.id;
+    if (!priceId) {
+      console.error("No price ID found in session line items", session.line_items);
+      return;
+    }
+    
+    console.log(`Processing checkout for customer: ${customerId}, price: ${priceId}`);
+    
+    const sql = await getDbConnection();
+    console.log("Database connection established");
 
-  const sql = await getDbConnection();
-
-  if ("email" in customer && priceId) {
-    await createOrUpdateUser(sql, customer, customerId);
-    //update user subscription
-    await updateUserSubscription(sql, priceId, customer.email as string);
-    //insert the payment
-    await insertPayment(sql, session, priceId, customer.email as string);
+    if ("email" in customer && customer.email) {
+      console.log(`Creating/updating user: ${customer.email}`);
+      await createOrUpdateUser(sql, customer, customerId);
+      
+      console.log(`Updating subscription for: ${customer.email}`);
+      await updateUserSubscription(sql, priceId, customer.email);
+      
+      console.log(`Inserting payment record for: ${customer.email}`);
+      await insertPayment(sql, session, priceId, customer.email);
+      
+      console.log("Checkout session processing completed successfully");
+    } else {
+      console.error("Customer email not found", customer);
+    }
+  } catch (error) {
+    console.error("Error in handleCheckoutSessionCompleted:", error);
+    throw error;
   }
 }
 
@@ -47,9 +81,13 @@ async function insertPayment(
   customerEmail: string
 ) {
   try {
-    await sql`INSERT INTO payments (amount, status, stripe_payment_id, price_id, user_email) VALUES (${session.amount_total}, ${session.status}, ${session.id}, ${priceId}, ${customerEmail})`;
+    console.log(`Inserting payment: ${session.id} for ${customerEmail}`);
+    const result = await sql`INSERT INTO payments (amount, status, stripe_payment_id, price_id, user_email) VALUES (${session.amount_total}, ${session.status}, ${session.id}, ${priceId}, ${customerEmail}) RETURNING id`;
+    console.log(`Payment inserted with ID: ${result[0]?.id}`);
+    return result;
   } catch (err) {
     console.error("Error in inserting payment", err);
+    throw err;
   }
 }
 
